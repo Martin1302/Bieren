@@ -45,4 +45,23 @@ public class BrouwersRepository extends AbstractRepository {
         return new Brouwer(result.getLong("id"), result.getString("naam"), result.getString("adres"),
                 result.getInt("postcode"), result.getString("gemeente"), result.getLong("omzet"));
     }
+
+
+    // Takenbundel 1.4 Van tot
+    // Method that sets up a connection to the dB bieren en de brouwers opzoekt die een omzet hebben tussen min en max opgegeven door de gebruiker
+    public List<Brouwer> getBrouwersMetOmzetTussenMinMax(int minOmzet, int maxOmzet) throws SQLException {
+        String sql = "select id, naam, adres, postcode, gemeente, omzet from brouwers WHERE omzet between ? and ? order by omzet, id;";
+        try (Connection connection = super.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, minOmzet);
+            statement.setInt(2, maxOmzet);
+            try (ResultSet result = statement.executeQuery()) {
+                List<Brouwer> brouwers = new ArrayList<>();
+                while (result.next()) {
+                    brouwers.add(resultNaarBrouwer(result));
+                }
+                return brouwers;
+            }
+        }
+    }
 }
