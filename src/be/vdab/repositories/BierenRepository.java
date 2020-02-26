@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 public class BierenRepository extends AbstractRepository {
 
+    // Takenbundel 1.2 Bieren verwijderen
     // Method that sets up a connection to the dB bieren and deletes all bieren without alcohol percentage.
     public int deleteBierenWhereAlcoholIsNull() throws SQLException {
         String sql = "delete from bieren where alcohol is null;";
