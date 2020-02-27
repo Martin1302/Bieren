@@ -90,5 +90,15 @@ public class Main {
         } catch (SQLException ex) {
             ex.printStackTrace(System.err);
         }
+
+
+        // Takenbundel 1.7 Brouwer met id=1 failliet
+        // Method that sets up a connection to the dB bieren. Bieren >= 8.5% gaan naar brouwer 2. Bieren < 8.5% gaan naar brouwer 3. Brouwer 1 wordt verwijderd.
+        System.out.println("\nBrouwer 1 failliet. Bieren >= 8.50 % naar brouwer 2. Bieren < 8.50 % naar brouwer 3");
+        try {
+            bierenRepository.brouwer1Failliet();
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
 }
