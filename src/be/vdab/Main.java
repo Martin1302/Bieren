@@ -100,5 +100,18 @@ public class Main {
         } catch (SQLException ex) {
             ex.printStackTrace(System.err);
         }
+
+        // Takenbundel 1.9 Bieren van de maand
+        // Method that sets up a connection to the dB bieren and retrieves all beers introduced in a particular month input by the user.
+        System.out.println("\nGeef een maand in :");
+        int maand = scanner.nextInt();
+        try {
+            // Toon alle bieren verkocht sinds de maand
+            for (String bierNaam : bierenRepository.getBierenVerkochtSindsMaand(maand)) {
+                System.out.println(bierNaam);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
 }

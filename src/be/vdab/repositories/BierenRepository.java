@@ -1,8 +1,13 @@
 package be.vdab.repositories;
 
+import be.vdab.domain.Brouwer;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BierenRepository extends AbstractRepository {
 
@@ -43,6 +48,31 @@ public class BierenRepository extends AbstractRepository {
             statementDeleteBrouwer1.executeUpdate();
             // Commit all executed commands
             connection.commit();
+        }
+    }
+
+    // Takenbundel 1.9 Bieren van de maand
+    // Method that sets up a connection to the dB bieren and retrieves all beers introduced in a particular month input by the user.
+    public List<String> getBierenVerkochtSindsMaand(int maand) throws SQLException {
+        String sql = "select naam from bieren where {fn month(sinds)} = ? order by sinds";
+        // Set up a dB connection.
+        try (Connection connection = getConnection();
+             // Prepare the sql commands.
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            // Vul de parameters in.
+            statement.setInt(1, maand);
+            // Set Isolation level
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            // Set AutoCommit to false in order to execute all commands in one transaction.
+            connection.setAutoCommit(false);
+            // Execute the query
+            try (ResultSet result = statement.executeQuery()) {
+                List<String> bierNamen = new ArrayList<>();
+                while (result.next()) {
+                    bierNamen.add(result.getString("naam"));
+                }
+                return bierNamen;
+            }
         }
     }
 }
