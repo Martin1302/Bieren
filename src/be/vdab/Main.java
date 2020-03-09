@@ -1,6 +1,7 @@
 package be.vdab;
 
 import be.vdab.domain.Brouwer;
+import be.vdab.dto.BrouwerNaamEnAantalBieren;
 import be.vdab.repositories.BierenRepository;
 import be.vdab.repositories.BrouwersRepository;
 
@@ -109,6 +110,18 @@ public class Main {
             // Toon alle bieren verkocht sinds de maand
             for (String bierNaam : bierenRepository.getBierenVerkochtSindsMaand(maand)) {
                 System.out.println(bierNaam);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+        }
+
+        // Takenbundel 1.10 Aantal bieren per brouwer
+        // Method that sets up a connection to the dB bieren and retrieves the number of beers per brewer sorted per brewer;
+        System.out.println("\nHet aantal bieren per brouwer is : ");
+        try {
+            // Toon per brouwer hoeveel bieren hij brouwt
+            for (BrouwerNaamEnAantalBieren brouwerNaamEnAantalBieren : bierenRepository.getAantalBierenPerBrouwer()) {
+                System.out.println(brouwerNaamEnAantalBieren.getBrouwer() + " : " + brouwerNaamEnAantalBieren.getAantalBieren());
             }
         } catch (SQLException ex) {
             ex.printStackTrace(System.err);

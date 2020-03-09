@@ -1,6 +1,6 @@
 package be.vdab.repositories;
 
-import be.vdab.domain.Brouwer;
+import be.vdab.dto.BrouwerNaamEnAantalBieren;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,7 +42,7 @@ public class BierenRepository extends AbstractRepository {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             // Set AutoCommit to false in order to execute all commands in one transaction.
             connection.setAutoCommit(false);
-            // Execute the sql command.
+            // Execute the sql commands.
             statementBrouwer1NaarBrouwer2.executeUpdate();
             statementBrouwer1NaarBrouwer3.executeUpdate();
             statementDeleteBrouwer1.executeUpdate();
@@ -71,7 +71,34 @@ public class BierenRepository extends AbstractRepository {
                 while (result.next()) {
                     bierNamen.add(result.getString("naam"));
                 }
+                connection.commit();
                 return bierNamen;
+            }
+        }
+    }
+
+
+    // Takenbundel 1.10 Aantal bieren per brouwer
+    // Method that sets up a connection to the dB bieren and retrieves the number of beers per brewer sorted per brewer;
+    public List<BrouwerNaamEnAantalBieren> getAantalBierenPerBrouwer() throws SQLException {
+        String sql = "select count(*) as aantalBieren, brouwers.naam from bieren inner join brouwers " +
+                "on bieren.brouwerid = brouwers.id group by brouwerid order by brouwers.naam";
+        // Set up a dB connection.
+        try (Connection connection = getConnection();
+             // Prepare the sql commands.
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            // Set Isolation level
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            // Set AutoCommit to false in order to execute all commands in one transaction.
+            connection.setAutoCommit(false);
+            // Execute the query
+            try (ResultSet result = statement.executeQuery()) {
+                List<BrouwerNaamEnAantalBieren> aantalBierenPerBrouwer = new ArrayList<>();
+                while (result.next()) {
+                    aantalBierenPerBrouwer.add(new BrouwerNaamEnAantalBieren(result.getInt("aantalBieren"), result.getString("naam")));
+                }
+                connection.commit();
+                return aantalBierenPerBrouwer;
             }
         }
     }
