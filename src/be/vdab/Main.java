@@ -6,8 +6,7 @@ import be.vdab.repositories.BierenRepository;
 import be.vdab.repositories.BrouwersRepository;
 
 import java.sql.SQLException;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -61,7 +60,7 @@ public class Main {
         // Method that sets up a connection to the dB bieren en de brouwer opzoekt met een specifieke Id.
         // Vraag de gebruiker een id in te geven.
         System.out.println("\nGeef de id van de brouwer in de tabel :");
-        Long id = scanner.nextLong();
+        long id = scanner.nextLong();
         try {
             // Toon de brouwer met deze id.
             Optional<Brouwer> optionalBrouwer = brouwersRepository.findBrouwerById(id);
@@ -102,10 +101,12 @@ public class Main {
             ex.printStackTrace(System.err);
         }
 
+
         // Takenbundel 1.9 Bieren van de maand
         // Method that sets up a connection to the dB bieren and retrieves all beers introduced in a particular month input by the user.
         System.out.println("\nGeef een maand in :");
         int maand = scanner.nextInt();
+        scanner.skip("\n");
         try {
             // Toon alle bieren verkocht sinds de maand
             for (String bierNaam : bierenRepository.getBierenVerkochtSindsMaand(maand)) {
@@ -115,6 +116,7 @@ public class Main {
             ex.printStackTrace(System.err);
         }
 
+
         // Takenbundel 1.10 Aantal bieren per brouwer
         // Method that sets up a connection to the dB bieren and retrieves the number of beers per brewer sorted per brewer;
         System.out.println("\nHet aantal bieren per brouwer is : ");
@@ -122,6 +124,60 @@ public class Main {
             // Toon per brouwer hoeveel bieren hij brouwt
             for (BrouwerNaamEnAantalBieren brouwerNaamEnAantalBieren : bierenRepository.getAantalBierenPerBrouwer()) {
                 System.out.println(brouwerNaamEnAantalBieren.getBrouwer() + " : " + brouwerNaamEnAantalBieren.getAantalBieren());
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+        }
+
+
+        // Takenbundel 1.12 Bieren van een soort
+        // Method that sets up a connection to the dB bieren and retrieves the beers of a particular kind;
+        System.out.println("\nGeef een soort bier op waarvoor de bieren opgehaald woorden:");
+        String bierSoort = scanner.nextLine();
+        try {
+            List<String> biernamenPerSoort = bierenRepository.getBierenVanSoort(bierSoort);
+            if (biernamenPerSoort.isEmpty()) {
+                System.out.println("Geen bieren voor deze soort (" + bierSoort + ") gevonden.");
+            } else {
+                // Toon de bieren van een bepaalde soort
+                for (String bierNaam : biernamenPerSoort) {
+                    System.out.println(bierNaam);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+        }
+
+
+        // Takenbundel 1.13 Omzet leeg maken
+        // Method that sets up a connection to the dB bieren and resets revenue for the given brouwer ids.
+        System.out.println("\nGeef de brouwer ids op wiens omzet gereset wordt (0 om te stoppen)");
+        Set<Long> ids = new LinkedHashSet<>();
+        id = scanner.nextLong();
+        while (id != 0) {
+            if (id > 0) {
+                // Voeg id toe aan de set. Add returns false if already present.
+                if (!ids.add(id)) {
+                    System.out.println("Id = " + id + " was reeds opgegeven !");
+                }
+            } else {
+                System.out.println("Negatieve waarde voor id !");
+            }
+            id = scanner.nextLong();
+        }
+        try {
+            if (!ids.isEmpty()) {
+                if (brouwersRepository.brouwersOmzetLeegMaken(ids) != ids.size()) {
+                    System.out.print("Niet alle ids werden aangepast : ");
+                    Set<Long> gevondenIds = brouwersRepository.findBrouwerIds(ids);
+                    for (Long opgegevenId : ids) {
+                        if (!gevondenIds.contains(opgegevenId)) {
+                            System.out.print(opgegevenId + ", ");
+                        }
+                    }
+                }
+            } else {
+                System.out.println("Geen ids opgegeven !");
             }
         } catch (SQLException ex) {
             ex.printStackTrace(System.err);

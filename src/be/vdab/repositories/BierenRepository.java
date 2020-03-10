@@ -46,7 +46,7 @@ public class BierenRepository extends AbstractRepository {
             statementBrouwer1NaarBrouwer2.executeUpdate();
             statementBrouwer1NaarBrouwer3.executeUpdate();
             statementDeleteBrouwer1.executeUpdate();
-            // Commit all executed commands
+            // Commit all executed commands. Close transaction
             connection.commit();
         }
     }
@@ -71,6 +71,7 @@ public class BierenRepository extends AbstractRepository {
                 while (result.next()) {
                     bierNamen.add(result.getString("naam"));
                 }
+                // Close transaction
                 connection.commit();
                 return bierNamen;
             }
@@ -97,8 +98,37 @@ public class BierenRepository extends AbstractRepository {
                 while (result.next()) {
                     aantalBierenPerBrouwer.add(new BrouwerNaamEnAantalBieren(result.getInt("aantalBieren"), result.getString("naam")));
                 }
+                // Close transaction
                 connection.commit();
                 return aantalBierenPerBrouwer;
+            }
+        }
+    }
+
+
+    // Takenbundel 1.12 Bieren van een soort
+    // Method that sets up a connection to the dB bieren and retrieves the beers of a particular kind;
+    public List<String> getBierenVanSoort(String bierSoort) throws SQLException {
+        String sql = "select naam from bieren where soortid = (select id from soorten where naam = ?)";
+        // Set up a dB connection.
+        try (Connection connection = getConnection();
+             // Prepare the sql commands.
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            // Vul de parameters in.
+            statement.setString(1, bierSoort);
+            // Set Isolation level
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            // Set AutoCommit to false in order to execute all commands in one transaction.
+            connection.setAutoCommit(false);
+            // Execute the query
+            try (ResultSet result = statement.executeQuery()) {
+                List<String> bierenPerSoort = new ArrayList<>();
+                while (result.next()) {
+                    bierenPerSoort.add(result.getString("naam"));
+                }
+                // Close transaction
+                connection.commit();
+                return bierenPerSoort;
             }
         }
     }

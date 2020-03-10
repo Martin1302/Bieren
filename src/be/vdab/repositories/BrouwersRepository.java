@@ -3,9 +3,7 @@ package be.vdab.repositories;
 import be.vdab.domain.Brouwer;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 public class BrouwersRepository extends AbstractRepository {
@@ -99,6 +97,64 @@ public class BrouwersRepository extends AbstractRepository {
                     brouwers.add(resultNaarBrouwer(result));
                 }
                 return brouwers;
+            }
+        }
+    }
+
+
+    // Takenbundel 1.13 Omzet leeg maken
+    // Method that sets up a connection to the dB bieren and resets revenue for the given brouwer ids.
+    public int brouwersOmzetLeegMaken(Set<Long> brouwerIds) throws SQLException {
+        StringBuilder sql = new StringBuilder("update brouwers set omzet = null where id in (");
+        sql.append("?,".repeat(brouwerIds.size()));
+        sql.setCharAt(sql.length() - 1, ')');
+        try (Connection connection = getConnection();
+             // Prepare the sql commands.
+             PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+            // Vul de parameters in.
+            int i = 1;
+            for (Long id : brouwerIds) {
+                statement.setLong(i++, id);
+            }
+            // Set Isolation level
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            // Set AutoCommit to false in order to execute all commands in one transaction.
+            connection.setAutoCommit(false);
+            // Execute the query
+            int aangepast = statement.executeUpdate();
+            // Close transaction
+            connection.commit();
+            return aangepast;
+        }
+    }
+
+    // Takenbundel 1.13 Omzet leeg maken
+    // Method that sets up a connection to the dB bieren and retrieves the given ids that exists.
+    public Set<Long> findBrouwerIds(Set<Long> brouwerIds) throws SQLException {
+        StringBuilder sql = new StringBuilder("select id from brouwers where id in (");
+        sql.append("?,".repeat(brouwerIds.size()));
+        sql.setCharAt(sql.length() - 1, ')');
+        try (Connection connection = getConnection();
+             // Prepare the sql commands.
+             PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+            // Vul de parameters in.
+            int i = 1;
+            for (Long id : brouwerIds) {
+                statement.setLong(i++, id);
+            }
+            // Set Isolation level
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            // Set AutoCommit to false in order to execute all commands in one transaction.
+            connection.setAutoCommit(false);
+            // Execute the query
+            try (ResultSet result = statement.executeQuery()) {
+                Set<Long> gevondenIds = new HashSet<>();
+                while (result.next()) {
+                    gevondenIds.add(result.getLong("id"));
+                }
+                // Close transaction
+                connection.commit();
+                return gevondenIds;
             }
         }
     }
