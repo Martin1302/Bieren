@@ -9,7 +9,7 @@ abstract class AbstractRepository {
     private static final String USER = "cursist";
     private static final String PASSWOORD = "cursist";
 
-    Connection getConnection() throws SQLException {
+    protected Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWOORD);
     }
 }
